@@ -1,4 +1,5 @@
 const secp = require("ethereum-cryptography/secp256k1");
+const { toHex } = require("ethereum-cryptography/utils");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -23,12 +24,17 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-	const body = req.body;
+	const { sender, amount, recipient, signature, msgHash } = req.body;
+	// const hashMessage = JSON.stringify(msgHash);
+	const hashMessage = new Uint8Array(Object.values(msgHash));
+	const sig = new Uint8Array(Object.values(signature));
 
-	console.log("server got: " + req.body);
+	console.log("server got: " + JSON.stringify(req.body));
+	console.log("hashMessage: " + hashMessage);
+	console.log("Sig: " + sig);
 
 	// //verify
-	const isSigned = false; //secp256k1.verify(signature, msgHash, sender);
+	const isSigned = secp.verify(sig, hashMessage, sender);
 	if (!isSigned) {
 		res
 			.status(400)
