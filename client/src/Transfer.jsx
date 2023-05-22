@@ -1,6 +1,6 @@
 import { useState } from "react";
 import server from "./server";
-import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import * as secp from "ethereum-cryptography/secp256k1.js";
 import { sha256 } from "ethereum-cryptography/sha256.js";
 import { utf8ToBytes, toHex } from "ethereum-cryptography/utils.js";
 
@@ -29,11 +29,10 @@ function Transfer({ address, setBalance }) {
 
 		//get signature - returns { r: bigint; s: bigint; recovery: number }
 		const msgHash = sha256(utf8ToBytes(msg));
-		const signature = secp256k1.sign(msgHash, privateKey);
-		// const [signature, recoveryBit] = await secp256k1.sign(msgHash, privateKey, {
-		// 	recovered: true,
-		// });
-		// const signature = await secp256k1.sign(msgHash, privateKey);
+		console.log("orgin msgHash: " + msgHash);
+		const [signature, rec] = await secp.sign(msgHash, privateKey, {
+			recovered: true,
+		});
 		console.log("sig: " + signature);
 
 		try {
@@ -44,7 +43,7 @@ function Transfer({ address, setBalance }) {
 				amount: parseInt(sendAmount),
 				recipient,
 				signature,
-				msgHash: msgHash,
+				msgHash,
 			});
 			setBalance(balance);
 			closeModal();
